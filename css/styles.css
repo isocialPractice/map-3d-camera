@@ -1,0 +1,361 @@
+/* ============================================================
+   3D Flight Simulator - Styles
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    background: #000;
+    color: #e0e0e0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* ---- Canvas Container ---- */
+#canvas-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ---- Capital Selector ---- */
+#selector-panel {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+#selector-panel label {
+    font-size: 0.75rem;
+    color: #88bbdd;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#capital-select {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 3px;
+    background: rgba(10, 20, 40, 0.9);
+    color: #c0e0f0;
+    cursor: pointer;
+    min-width: 200px;
+    outline: none;
+}
+
+#capital-select:focus {
+    border-color: rgba(100, 200, 255, 0.6);
+}
+
+#capital-select optgroup {
+    color: #66aacc;
+    font-weight: bold;
+}
+
+#capital-select option {
+    color: #c0e0f0;
+    background: #0a1428;
+}
+
+/* ---- HUD Overlay ---- */
+#hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    pointer-events: none;
+}
+
+/* Location display */
+#hud-location {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+#hud-capital {
+    font-size: 1rem;
+    color: rgba(180, 220, 255, 0.9);
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+#hud-coords {
+    font-size: 0.72rem;
+    color: rgba(140, 190, 230, 0.7);
+    margin-top: 2px;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+/* Heading */
+#hud-heading {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.35);
+    padding: 3px 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(100, 200, 255, 0.15);
+}
+
+#hud-heading-value {
+    font-size: 0.9rem;
+    color: rgba(100, 220, 255, 0.85);
+    text-shadow: 0 0 6px rgba(0, 100, 200, 0.3);
+}
+
+/* Speed (left side) */
+#hud-speed {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 10px 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(100, 200, 255, 0.15);
+}
+
+#hud-speed .hud-label {
+    font-size: 0.65rem;
+    color: rgba(100, 200, 255, 0.5);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+#hud-speed-value {
+    font-size: 1.6rem;
+    color: rgba(100, 255, 180, 0.9);
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 200, 100, 0.3);
+}
+
+#hud-speed .hud-unit {
+    font-size: 0.6rem;
+    color: rgba(100, 200, 255, 0.4);
+    margin-top: 2px;
+}
+
+/* Altitude (right side) */
+#hud-altitude {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 10px 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(100, 200, 255, 0.15);
+}
+
+#hud-altitude .hud-label {
+    font-size: 0.65rem;
+    color: rgba(100, 200, 255, 0.5);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+#hud-altitude-value {
+    font-size: 1.6rem;
+    color: rgba(255, 200, 100, 0.9);
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(200, 150, 0, 0.3);
+}
+
+#hud-altitude .hud-unit {
+    font-size: 0.6rem;
+    color: rgba(100, 200, 255, 0.4);
+    margin-top: 2px;
+}
+
+/* Crosshair */
+#hud-crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: rgba(200, 230, 255, 0.4);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    line-height: 1;
+}
+
+/* Pitch indicator */
+#hud-pitch {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(80px);
+    text-align: center;
+}
+
+#hud-pitch-value {
+    font-size: 0.75rem;
+    color: rgba(180, 200, 255, 0.6);
+}
+
+/* ---- Click to Fly Prompt ---- */
+#fly-prompt {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 80;
+    text-align: center;
+    pointer-events: none;
+}
+
+#fly-prompt .prompt-text {
+    font-size: 1.8rem;
+    color: rgba(180, 220, 255, 0.9);
+    text-shadow: 0 0 20px rgba(50, 150, 255, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* ---- Controls Help ---- */
+#controls-help {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 80;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid rgba(100, 200, 255, 0.15);
+    pointer-events: none;
+    font-size: 0.72rem;
+    color: rgba(160, 200, 230, 0.8);
+    line-height: 1.6;
+    transition: opacity 2s ease;
+}
+
+#controls-help.fade-out {
+    opacity: 0;
+}
+
+/* ---- Loading Overlay ---- */
+#loading-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 90;
+    text-align: center;
+    background: rgba(0, 10, 30, 0.85);
+    padding: 30px 50px;
+    border-radius: 10px;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+#loading-text {
+    font-size: 1rem;
+    color: rgba(150, 200, 240, 0.9);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#loading-bar-container {
+    width: 240px;
+    height: 4px;
+    background: rgba(50, 80, 120, 0.5);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+#loading-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #2288cc, #44ccff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+#loading-progress {
+    font-size: 0.8rem;
+    color: rgba(100, 180, 230, 0.7);
+    margin-top: 8px;
+}
+
+/* ---- Welcome Screen ---- */
+#welcome {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 70;
+    text-align: center;
+    pointer-events: none;
+}
+
+#welcome h1 {
+    font-size: 2.2rem;
+    color: rgba(180, 220, 255, 0.9);
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 30px rgba(50, 150, 255, 0.3);
+    margin-bottom: 8px;
+}
+
+#welcome p {
+    font-size: 0.85rem;
+    color: rgba(130, 170, 210, 0.6);
+    letter-spacing: 1px;
+}
+
+#welcome .welcome-hint {
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: rgba(100, 150, 200, 0.5);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+/* ---- Utility ---- */
+.hidden {
+    display: none !important;
+}

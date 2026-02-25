@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Flight Simulator - World Capitals</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Capital Selector -->
+    <div id="selector-panel">
+        <label for="capital-select">Destination</label>
+        <select id="capital-select">
+            <option value="">-- Select a Capital --</option>
+        </select>
+    </div>
+
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud" class="hidden">
+        <div id="hud-location">
+            <div id="hud-capital">---</div>
+            <div id="hud-coords">---</div>
+        </div>
+        <div id="hud-heading">
+            <span id="hud-heading-value">N 000</span>
+        </div>
+        <div id="hud-speed">
+            <div class="hud-label">SPD</div>
+            <div id="hud-speed-value">0</div>
+            <div class="hud-unit">km/h</div>
+        </div>
+        <div id="hud-altitude">
+            <div class="hud-label">ALT</div>
+            <div id="hud-altitude-value">0</div>
+            <div class="hud-unit">m</div>
+        </div>
+        <div id="hud-crosshair">+</div>
+        <div id="hud-pitch">
+            <span id="hud-pitch-value">0</span>
+        </div>
+    </div>
+
+    <!-- Click to Fly Prompt -->
+    <div id="fly-prompt" class="hidden">
+        <div class="prompt-text">Click to Fly</div>
+    </div>
+
+    <!-- Controls Help -->
+    <div id="controls-help" class="hidden">
+        <div>W/S: Speed &middot; Mouse: Look &middot; A/D: Roll</div>
+        <div>Q/E: Yaw &middot; R/F: Alt &middot; Space: Level &middot; Shift: Boost</div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div id="loading-text">Loading terrain...</div>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+        <div id="loading-progress">0%</div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome">
+        <h1>3D Flight Simulator</h1>
+        <p>Satellite Terrain Viewer - World Capitals</p>
+        <p class="welcome-hint">Select a capital city to begin</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/capitals.js"></script>
+    <script src="js/flightControls.js"></script>
+    <script src="js/terrainFill.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
