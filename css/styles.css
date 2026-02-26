@@ -359,3 +359,153 @@ body {
 .hidden {
     display: none !important;
 }
+
+/* ---- Selector Panel Buttons ---- */
+#selector-panel button {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 3px;
+    background: rgba(10, 20, 40, 0.9);
+    color: #c0e0f0;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+#selector-panel button:hover {
+    border-color: rgba(100, 200, 255, 0.6);
+    background: rgba(20, 40, 70, 0.9);
+}
+
+#btn-export-json {
+    color: #88ddaa !important;
+    border-color: rgba(100, 255, 160, 0.3) !important;
+}
+
+#btn-export-json:hover {
+    border-color: rgba(100, 255, 160, 0.6) !important;
+}
+
+/* ---- Render Config Panel ---- */
+#config-panel {
+    position: fixed;
+    top: 56px;
+    left: 12px;
+    z-index: 100;
+    width: 320px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: rgba(0, 8, 24, 0.88);
+    padding: 14px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    backdrop-filter: blur(10px);
+    font-size: 0.72rem;
+}
+
+#config-panel h3 {
+    font-size: 0.85rem;
+    color: rgba(180, 220, 255, 0.9);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+#config-panel .config-hint {
+    font-size: 0.65rem;
+    color: rgba(120, 170, 210, 0.6);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+#config-panel fieldset {
+    border: 1px solid rgba(100, 200, 255, 0.12);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+}
+
+#config-panel legend {
+    font-size: 0.7rem;
+    color: #66aacc;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 6px;
+}
+
+.cfg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.cfg-row label {
+    flex: 0 0 100px;
+    font-size: 0.68rem;
+    color: rgba(160, 200, 230, 0.8);
+    text-align: right;
+}
+
+.cfg-row input[type="range"] {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(50, 80, 120, 0.5);
+    border-radius: 2px;
+    outline: none;
+}
+
+.cfg-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #44ccff;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.cfg-row input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #44ccff;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.cfg-row input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #44ccff;
+}
+
+.cfg-row span {
+    flex: 0 0 50px;
+    font-size: 0.65rem;
+    color: rgba(100, 220, 255, 0.85);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar styling for config panel */
+#config-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+#config-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#config-panel::-webkit-scrollbar-thumb {
+    background: rgba(100, 200, 255, 0.2);
+    border-radius: 2px;
+}

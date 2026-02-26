@@ -55,6 +55,51 @@ function TerrainFill(renderer, scene, camera) {
     this.frameCount = 0;
     this.sampleInterval = 45; // Sample every N frames
 
+    // Time-based filler pattern update interval (seconds)
+    this.updateIntervalSec = 10;
+    this.lastUpdateTime = 0;
+
+    // Configurable patch counts and sizes (overridden by RenderConfig)
+    this.perimeterPatchCount = 10;
+    this.perimeterPatchSize = 10;
+    this.centerPatchCount = 5;
+    this.centerPatchSize = 10;
+    this.paddingPatchCount = 4;
+    this.paddingPatchSize = 5;
+
+    // Cloud overlay effect applied to the fill area
+    this.cloudOverlay = {
+        enabled: true,
+        opacity: 0.35,
+        speed: 0.0004,
+        coverage: 0.5,
+        scale: 0.008,
+        time: 0
+    };
+
+    // Cloud canvas and texture (rendered on top of fill plane)
+    this.cloudCanvas = document.createElement('canvas');
+    this.cloudCanvas.width = this.texW;
+    this.cloudCanvas.height = this.texH;
+    this.cloudCtx = this.cloudCanvas.getContext('2d');
+
+    this.cloudTexture = new THREE.CanvasTexture(this.cloudCanvas);
+    this.cloudTexture.wrapS = THREE.RepeatWrapping;
+    this.cloudTexture.wrapT = THREE.RepeatWrapping;
+    this.cloudTexture.repeat.set(50, 50);
+
+    var cloudGeo = new THREE.PlaneGeometry(30000, 30000);
+    var cloudMat = new THREE.MeshBasicMaterial({
+        map: this.cloudTexture,
+        transparent: true,
+        depthWrite: false,
+        opacity: 1.0
+    });
+    this.cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+    this.cloudMesh.rotation.x = -Math.PI / 2;
+    this.cloudMesh.position.y = -0.3;
+    scene.add(this.cloudMesh);
+
     // Pre-compute noise permutation table
     this.perm = new Array(512);
     var p = new Array(256);
@@ -64,6 +109,16 @@ function TerrainFill(renderer, scene, camera) {
         var tmp = p[i]; p[i] = p[j]; p[j] = tmp;
     }
     for (var i = 0; i < 512; i++) this.perm[i] = p[i & 255];
+
+    // Second permutation for cloud noise (different seed)
+    this.cloudPerm = new Array(512);
+    var cp = new Array(256);
+    for (var i = 0; i < 256; i++) cp[i] = i;
+    for (var i = 255; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = cp[i]; cp[i] = cp[j]; cp[j] = tmp;
+    }
+    for (var i = 0; i < 512; i++) this.cloudPerm[i] = cp[i & 255];
 
     // Pre-compute noise map (noise values won't change, only color mapping does)
     this.noiseMap = new Float32Array(this.texW * this.texH);
@@ -86,14 +141,25 @@ TerrainFill.prototype.update = function (flightHeading) {
     this.fillMesh.position.x = this.camera.position.x;
     this.fillMesh.position.z = this.camera.position.z;
 
+    // Keep cloud mesh centered on camera
+    this.cloudMesh.position.x = this.camera.position.x;
+    this.cloudMesh.position.z = this.camera.position.z;
+
     this.frameCount++;
     if (this.frameCount % this.sampleInterval !== 0) return;
 
+    // Collect viewport samples every sampleInterval frames
     this._collectSamples(flightHeading);
 
-    if (this.sampleColors.length > 20) {
+    // Regenerate fill texture on a time-based interval (seconds)
+    var now = performance.now() / 1000;
+    if (this.sampleColors.length > 20 && (now - this.lastUpdateTime) >= this.updateIntervalSec) {
         this._generateFillTexture();
+        this.lastUpdateTime = now;
     }
+
+    // Update cloud effect
+    this._updateCloud();
 };
 
 /**
@@ -142,49 +208,53 @@ TerrainFill.prototype._collectSamples = function (flightHeading) {
     }
 
     var borderDepth = Math.max(Math.floor(h * 0.08), 8);
-    var patchSize = 10;
-    var smallPatch = 5;
+    var patchSize = this.perimeterPatchSize;
+    var smallPatch = this.paddingPatchSize;
+    var perimCount = this.perimeterPatchCount;
+    var centerCount = this.centerPatchCount;
+    var centerSize = this.centerPatchSize;
+    var padCount = this.paddingPatchCount;
 
-    // ---- Border samples: 10 per border (40 total) ----
+    // ---- Border samples: perimCount per border ----
 
     // Top border
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < perimCount; i++) {
         var x = Math.floor(Math.random() * (w - patchSize));
         var y = Math.floor(Math.random() * borderDepth);
         this.sampleColors = this.sampleColors.concat(extractPatch(x, y, patchSize));
     }
     // Bottom border
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < perimCount; i++) {
         var x = Math.floor(Math.random() * (w - patchSize));
         var y = h - borderDepth + Math.floor(Math.random() * Math.max(1, borderDepth - patchSize));
         this.sampleColors = this.sampleColors.concat(extractPatch(x, y, patchSize));
     }
     // Left border
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < perimCount; i++) {
         var x = Math.floor(Math.random() * borderDepth);
         var y = Math.floor(Math.random() * (h - patchSize));
         this.sampleColors = this.sampleColors.concat(extractPatch(x, y, patchSize));
     }
     // Right border
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < perimCount; i++) {
         var x = w - borderDepth + Math.floor(Math.random() * Math.max(1, borderDepth - patchSize));
         var y = Math.floor(Math.random() * (h - patchSize));
         this.sampleColors = this.sampleColors.concat(extractPatch(x, y, patchSize));
     }
 
-    // ---- Middle area: 5 samples ----
+    // ---- Middle area: centerCount samples ----
     var midRange = Math.min(w, h) / 4;
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < centerCount; i++) {
         var x = Math.floor(w / 2 - midRange / 2 + Math.random() * midRange);
         var y = Math.floor(h / 2 - midRange / 2 + Math.random() * midRange);
-        this.sampleColors = this.sampleColors.concat(extractPatch(x, y, patchSize));
+        this.sampleColors = this.sampleColors.concat(extractPatch(x, y, centerSize));
     }
 
-    // ---- Padding perimeter: 4 samples toward flight direction ----
+    // ---- Padding perimeter: padCount samples toward flight direction ----
     var headRad = ((flightHeading || 0)) * Math.PI / 180;
     var dirX = Math.sin(headRad);
     var dirY = -Math.cos(headRad);
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < padCount; i++) {
         var dist = 0.25 + Math.random() * 0.35;
         var spread = (Math.random() - 0.5) * 0.4;
         var sx = Math.floor(w / 2 + (dirX * dist + dirY * spread) * w * 0.45);
@@ -281,6 +351,79 @@ TerrainFill.prototype._noise2d = function (x, y) {
 };
 
 /**
+ * Generates animated cloud overlay texture using time-offset noise.
+ * The cloud effect applies a semi-transparent white layer over the
+ * fill area, simulating drifting cloud cover.
+ */
+TerrainFill.prototype._updateCloud = function () {
+    if (!this.cloudOverlay.enabled) {
+        this.cloudMesh.visible = false;
+        return;
+    }
+    this.cloudMesh.visible = true;
+    this.cloudOverlay.time += this.cloudOverlay.speed * this.sampleInterval;
+
+    var ctx = this.cloudCtx;
+    var w = this.texW;
+    var h = this.texH;
+    var imgData = ctx.createImageData(w, h);
+    var data = imgData.data;
+    var t = this.cloudOverlay.time;
+    var scale = this.cloudOverlay.scale;
+    var coverage = this.cloudOverlay.coverage;
+    var opacity = this.cloudOverlay.opacity;
+
+    for (var y = 0; y < h; y++) {
+        for (var x = 0; x < w; x++) {
+            // Multi-octave noise with time offset for drift
+            var n1 = this._cloudNoise2d(x * scale + t, y * scale + t * 0.7);
+            var n2 = this._cloudNoise2d(x * scale * 2.3 + 50 + t * 1.3, y * scale * 2.3 + 50 + t * 0.9) * 0.5;
+            var n3 = this._cloudNoise2d(x * scale * 5.1 + 120 - t * 0.5, y * scale * 5.1 + 120 + t * 0.3) * 0.25;
+            var noise = (n1 + n2 + n3) / 1.75;
+
+            // Apply coverage threshold: lower coverage = fewer clouds
+            var cloudDensity = Math.max(0, noise - (1 - coverage)) / coverage;
+            cloudDensity = Math.min(1, cloudDensity);
+
+            // Smooth edges
+            cloudDensity = cloudDensity * cloudDensity * (3 - 2 * cloudDensity);
+
+            var alpha = Math.round(cloudDensity * opacity * 255);
+            var px = (y * w + x) * 4;
+            data[px] = 255;     // White clouds
+            data[px + 1] = 255;
+            data[px + 2] = 255;
+            data[px + 3] = alpha;
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    this.cloudTexture.needsUpdate = true;
+};
+
+/**
+ * 2D value noise using the cloud-specific permutation table.
+ */
+TerrainFill.prototype._cloudNoise2d = function (x, y) {
+    var xi = Math.floor(x) & 255;
+    var yi = Math.floor(y) & 255;
+    var xf = x - Math.floor(x);
+    var yf = y - Math.floor(y);
+
+    var u = xf * xf * (3 - 2 * xf);
+    var v = yf * yf * (3 - 2 * yf);
+
+    var aa = this.cloudPerm[this.cloudPerm[xi] + yi] / 255;
+    var ab = this.cloudPerm[this.cloudPerm[xi] + yi + 1] / 255;
+    var ba = this.cloudPerm[this.cloudPerm[xi + 1] + yi] / 255;
+    var bb = this.cloudPerm[this.cloudPerm[xi + 1] + yi + 1] / 255;
+
+    var x1 = aa * (1 - u) + ba * u;
+    var x2 = ab * (1 - u) + bb * u;
+    return x1 * (1 - v) + x2 * v;
+};
+
+/**
  * Reset fill state when switching capitals.
  */
 TerrainFill.prototype.reset = function () {
@@ -289,4 +432,7 @@ TerrainFill.prototype.reset = function () {
     this.fillCtx.fillStyle = '#2a3a2a';
     this.fillCtx.fillRect(0, 0, this.texW, this.texH);
     this.fillTexture.needsUpdate = true;
+    this.cloudOverlay.time = 0;
+    this.cloudCtx.clearRect(0, 0, this.texW, this.texH);
+    this.cloudTexture.needsUpdate = true;
 };

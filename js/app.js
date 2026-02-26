@@ -15,6 +15,8 @@ var LOAD_RADIUS = 6;        // Tiles to load around camera
 var UNLOAD_RADIUS = 9;      // Tiles to unload beyond this distance
 var START_ALTITUDE = 200;   // Starting camera height
 var FOG_DENSITY = 0.00018;  // Exponential fog density
+var RADIUS_FEATHER = 3;     // Tiles to feather at load radius edge
+var MAX_TILES = 600;        // Maximum loaded tiles (memory cap)
 
 /* ============================================================
    State
@@ -213,7 +215,7 @@ function loadTile(tileX, tileY) {
     var worldZ = (tileY - centerTileY) * TILE_SIZE;
 
     var geometry = new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE);
-    var material = new THREE.MeshBasicMaterial({ color: 0x2a3a2a });
+    var material = new THREE.MeshBasicMaterial({ color: 0x2a3a2a, transparent: true });
     var mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = -Math.PI / 2;
     mesh.position.set(worldX, 0, worldZ);
@@ -307,6 +309,71 @@ function updateTiles() {
         var ddy = ty2 - camTileY;
         if (ddx * ddx + ddy * ddy > UNLOAD_RADIUS * UNLOAD_RADIUS) {
             unloadTile(allKeys[i]);
+        }
+    }
+
+    // Enforce MAX_TILES cap: evict most distant tiles first
+    var currentKeys = Object.keys(loadedTiles);
+    if (currentKeys.length > MAX_TILES) {
+        var tilesByDist = [];
+        for (var i = 0; i < currentKeys.length; i++) {
+            var tile = loadedTiles[currentKeys[i]];
+            var ddx = tile.tileX - camTileX;
+            var ddy = tile.tileY - camTileY;
+            tilesByDist.push({ key: currentKeys[i], dist: ddx * ddx + ddy * ddy });
+        }
+        tilesByDist.sort(function (a, b) { return b.dist - a.dist; });
+        var excess = currentKeys.length - MAX_TILES;
+        for (var i = 0; i < excess; i++) {
+            unloadTile(tilesByDist[i].key);
+        }
+    }
+
+    // Apply feather opacity to tiles near the load radius edge
+    updateTileFeather(camTileX, camTileY);
+}
+
+/**
+ * Applies smooth opacity falloff to tiles near the load radius edge,
+ * creating a feathered border effect. Tiles within the feather zone
+ * transition from full opacity to transparent using smoothstep.
+ */
+function updateTileFeather(camTileX, camTileY) {
+    if (RADIUS_FEATHER <= 0) {
+        // No feather: ensure all tiles are fully opaque
+        var keys = Object.keys(loadedTiles);
+        for (var i = 0; i < keys.length; i++) {
+            var tile = loadedTiles[keys[i]];
+            if (tile.mesh.material.opacity !== 1) {
+                tile.mesh.material.opacity = 1;
+                tile.mesh.material.needsUpdate = true;
+            }
+        }
+        return;
+    }
+
+    var featherStart = LOAD_RADIUS - RADIUS_FEATHER;
+    var keys = Object.keys(loadedTiles);
+    for (var i = 0; i < keys.length; i++) {
+        var tile = loadedTiles[keys[i]];
+        var ddx = tile.tileX - camTileX;
+        var ddy = tile.tileY - camTileY;
+        var dist = Math.sqrt(ddx * ddx + ddy * ddy);
+
+        var opacity;
+        if (dist <= featherStart) {
+            opacity = 1;
+        } else if (dist >= LOAD_RADIUS) {
+            opacity = 0;
+        } else {
+            // Smoothstep falloff from 1 to 0 across the feather zone
+            var t = (dist - featherStart) / RADIUS_FEATHER;
+            opacity = 1 - t * t * (3 - 2 * t);
+        }
+
+        if (tile.mesh.material.opacity !== opacity) {
+            tile.mesh.material.opacity = opacity;
+            tile.mesh.material.needsUpdate = true;
         }
     }
 }
@@ -488,14 +555,84 @@ function animate() {
 }
 
 /* ============================================================
+   Tile Zoom Reload
+   ============================================================ */
+
+/**
+ * Recalculates tile coordinates and reloads all tiles at the current
+ * zoom level. Preserves the camera's geographic position so the view
+ * stays in place while tiles reload in the background.
+ */
+function reloadTilesAtCurrentZoom() {
+    if (!originLat) return;
+
+    // Determine camera's current geographic position before clearing
+    var camGeo = positionToLatLng(controls.position.x, controls.position.z);
+
+    clearAllTiles();
+
+    // Re-center on the camera's current geographic location at new zoom
+    originLat = camGeo.lat;
+    originLng = camGeo.lng;
+    currentMetersPerTile = metersPerTile(originLat, TILE_ZOOM);
+
+    var tile = latLngToTile(originLat, originLng, TILE_ZOOM);
+    centerTileX = tile.x;
+    centerTileY = tile.y;
+
+    // Camera is now at geographic center, so world position resets to origin
+    controls.position.x = 0;
+    controls.position.z = 0;
+    camera.position.x = 0;
+    camera.position.z = 0;
+
+    if (terrainFill) terrainFill.reset();
+    updateTiles();
+
+    // Update HUD with the new center coordinates
+    document.getElementById('hud-coords').textContent =
+        Math.abs(camGeo.lat).toFixed(4) + '\u00B0' + (camGeo.lat >= 0 ? 'N' : 'S') + '  ' +
+        Math.abs(camGeo.lng).toFixed(4) + '\u00B0' + (camGeo.lng >= 0 ? 'E' : 'W');
+}
+
+/* ============================================================
    Initialize
    ============================================================ */
 
 function init() {
     detectTileProvider(function () {
-        initScene();
-        setupUI();
-        animate();
+        RenderConfig.load(function (cfg) {
+            initScene();
+            RenderConfig.apply();
+            setupUI();
+            RenderConfig.bindSliders();
+
+            // React to config changes that require special handling
+            RenderConfig.onChange(function (path) {
+                if (path === 'map.tileZoom') {
+                    reloadTilesAtCurrentZoom();
+                }
+            });
+
+            // Export JSON button
+            var exportBtn = document.getElementById('btn-export-json');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function () {
+                    RenderConfig.exportJSON();
+                });
+            }
+
+            // Config panel toggle
+            var toggleBtn = document.getElementById('btn-toggle-config');
+            var configPanel = document.getElementById('config-panel');
+            if (toggleBtn && configPanel) {
+                toggleBtn.addEventListener('click', function () {
+                    configPanel.classList.toggle('hidden');
+                });
+            }
+
+            animate();
+        });
     });
 }
 

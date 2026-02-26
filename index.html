@@ -14,6 +14,125 @@
         <select id="capital-select">
             <option value="">-- Select a Capital --</option>
         </select>
+        <button id="btn-toggle-config" type="button" title="Configure Rendering">Config</button>
+        <button id="btn-export-json" type="button" title="Export renderMap.json">Export JSON</button>
+    </div>
+
+    <!-- Render Config Panel -->
+    <div id="config-panel" class="hidden">
+        <h3>Render Configuration</h3>
+        <p class="config-hint">Adjust rendering parameters to determine suitability for different gaming applications.</p>
+
+        <fieldset>
+            <legend>Map</legend>
+            <div class="cfg-row">
+                <label for="cfg-width">Width</label>
+                <input type="range" id="cfg-width" data-config="map.width" min="640" max="3840" step="10">
+                <span id="cfg-width-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-height">Height</label>
+                <input type="range" id="cfg-height" data-config="map.height" min="480" max="2160" step="10">
+                <span id="cfg-height-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-tileZoom">Tile Zoom</label>
+                <input type="range" id="cfg-tileZoom" data-config="map.tileZoom" min="10" max="19" step="1">
+                <span id="cfg-tileZoom-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-loadRadius">Load Radius</label>
+                <input type="range" id="cfg-loadRadius" data-config="map.loadRadius" min="2" max="48" step="1">
+                <span id="cfg-loadRadius-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-radiusFeather">Radius Feather</label>
+                <input type="range" id="cfg-radiusFeather" data-config="map.radiusFeather" min="0" max="100" step="0.5">
+                <span id="cfg-radiusFeather-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-startAlt">Start Altitude</label>
+                <input type="range" id="cfg-startAlt" data-config="map.startAltitude" min="50" max="1000" step="10">
+                <span id="cfg-startAlt-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-fogDensity">Fog Density</label>
+                <input type="range" id="cfg-fogDensity" data-config="map.fogDensity" min="0.00001" max="0.01" step="0.00001">
+                <span id="cfg-fogDensity-val"></span>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Filler</legend>
+            <div class="cfg-row">
+                <label for="cfg-sampleInterval">Sample Interval</label>
+                <input type="range" id="cfg-sampleInterval" data-config="filler.sampleInterval" min="10" max="120" step="5">
+                <span id="cfg-sampleInterval-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-updateInterval">Update Time (s)</label>
+                <input type="range" id="cfg-updateInterval" data-config="filler.updateIntervalSec" min="5" max="60" step="1">
+                <span id="cfg-updateInterval-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-perimCount">Perimeter Count</label>
+                <input type="range" id="cfg-perimCount" data-config="filler.perimeter.patchCount" min="1" max="20" step="1">
+                <span id="cfg-perimCount-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-perimSize">Perimeter Size</label>
+                <input type="range" id="cfg-perimSize" data-config="filler.perimeter.patchSize" min="2" max="20" step="1">
+                <span id="cfg-perimSize-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-centerCount">Center Count</label>
+                <input type="range" id="cfg-centerCount" data-config="filler.center.patchCount" min="1" max="15" step="1">
+                <span id="cfg-centerCount-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-centerSize">Center Size</label>
+                <input type="range" id="cfg-centerSize" data-config="filler.center.patchSize" min="2" max="20" step="1">
+                <span id="cfg-centerSize-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-padCount">Padding Count</label>
+                <input type="range" id="cfg-padCount" data-config="filler.padding.patchCount" min="1" max="12" step="1">
+                <span id="cfg-padCount-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-padSize">Padding Size</label>
+                <input type="range" id="cfg-padSize" data-config="filler.padding.patchSize" min="2" max="15" step="1">
+                <span id="cfg-padSize-val"></span>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Cloud Effect</legend>
+            <div class="cfg-row">
+                <label for="cfg-cloud-enabled">Enabled</label>
+                <input type="checkbox" id="cfg-cloud-enabled">
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-cloudOpacity">Opacity</label>
+                <input type="range" id="cfg-cloudOpacity" data-config="cloud.opacity" min="0" max="1" step="0.05">
+                <span id="cfg-cloudOpacity-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-cloudSpeed">Speed</label>
+                <input type="range" id="cfg-cloudSpeed" data-config="cloud.speed" min="0.0001" max="0.002" step="0.0001">
+                <span id="cfg-cloudSpeed-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-cloudCoverage">Coverage</label>
+                <input type="range" id="cfg-cloudCoverage" data-config="cloud.coverage" min="0.1" max="1" step="0.05">
+                <span id="cfg-cloudCoverage-val"></span>
+            </div>
+            <div class="cfg-row">
+                <label for="cfg-cloudScale">Scale</label>
+                <input type="range" id="cfg-cloudScale" data-config="cloud.scale" min="0.002" max="0.03" step="0.001">
+                <span id="cfg-cloudScale-val"></span>
+            </div>
+        </fieldset>
     </div>
 
     <!-- 3D Canvas Container -->
@@ -75,6 +194,7 @@
     <script src="js/capitals.js"></script>
     <script src="js/flightControls.js"></script>
     <script src="js/terrainFill.js"></script>
+    <script src="js/renderConfig.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -2,43 +2,62 @@
 
 `ctrl + click` to run [demo](https://isocialpractice.github.io/map-3d-camera/index.html).
 
-3D satellite camera viewer for US state capitals using Google Maps.
+3D satellite camera viewer for world capitals using Three.js flight simulator controls.
 
 ## Features
 
-- **50 US State Capitals** -- dropdown selector grouped by region (Northeast, Southeast, Midwest, Southwest, West)
-- **Google Maps Satellite View** -- loads satellite imagery in an embedded iframe with 3D tilt
-- **3D Camera Controls** -- rotate, pan, and zoom the satellite view with mouse controls
-- **Background Map Buffer** -- hidden background map at 10% wider zoom provides visual data at perspective edges
-- **Low Sensitivity Controls** -- intentionally subtle 3D controls for smooth, precise camera adjustments
+- **World Capitals** -- dropdown selector grouped by continent (North/South America, Europe, Asia, Africa, Oceania)
+- **Satellite Tile Terrain** -- loads satellite imagery tiles from Google Maps / Esri into a 3D Three.js scene
+- **Flight Simulator Controls** -- WASD, mouse look, roll, yaw, altitude, boost, and auto-level
+- **Terrain Fill System** -- samples viewport colors and generates noise-blended fill for unloaded tile gaps
+- **Cloud Effect** -- animated procedural cloud overlay applied to the terrain fill area
+- **Render Configuration** -- adjustable sliders for map dimensions, tile settings, filler sampling, and cloud parameters
+- **Export JSON** -- export current rendering configuration as `renderMap.json` for reuse across sessions
+- **HUD Overlay** -- heading, speed, altitude, pitch, coordinates, and crosshair display
 
 ## Getting Started
 
-1. Open `index.html` in a modern web browser
-2. Select a state capital from the dropdown
-3. The satellite view loads centered on the selected capital
+1. Open `index.html` in a modern web browser (or serve via local HTTP server for JSON loading)
+2. Select a capital city from the dropdown
+3. The satellite terrain loads centered on the selected capital
+4. Click to enter flight mode, then use keyboard/mouse controls
 
-### 3D Camera Controls
+### Flight Controls
 
 | Control                | Action            |
 |------------------------|-------------------|
-| Left-click + drag      | Rotate (tilt/orbit) |
-| Right-click + drag     | Pan               |
-| Mouse wheel            | Zoom in/out       |
+| W / S (Up / Down)      | Throttle          |
+| Mouse (pointer lock)   | Pitch / Yaw       |
+| A / D (Left / Right)   | Roll              |
+| Q / E                  | Rudder yaw        |
+| R / F                  | Climb / Descend   |
+| Space                  | Auto-level        |
+| Shift                  | Boost             |
 
-Controls are set to very low sensitivity for fine-grained camera adjustments.
+### Render Configuration
+
+Click the **Config** button in the top-left to open the configuration panel. Adjust sliders in real-time to tune:
+
+- **Map**: width, height, tile zoom, load radius, start altitude, fog density
+- **Filler**: sample interval, patch count/size at perimeter, center, and padding zones
+- **Cloud Effect**: enabled toggle, opacity, drift speed, coverage, noise scale
+
+Click **Export JSON** to download the current configuration as `renderMap.json`. Place this file alongside `index.html` to load it automatically on next visit.
 
 ## Project Structure
 
 ```
 map-3d-camera/
   index.html            Main HTML page
+  renderMap.json        Render configuration (loaded on startup)
   css/
     styles.css          Application styles
   js/
-    capitals.js         US state capitals data (50 states, grouped by region)
-    app.js              Application logic (form, map loading, configuration)
-    camera3d.js         3D camera controls (CSS 3D transforms)
+    capitals.js         World capitals data (grouped by continent)
+    flightControls.js   Flight simulator camera controls
+    terrainFill.js      Terrain fill + cloud effect system
+    renderConfig.js     Configuration loader, applier, and exporter
+    app.js              Application logic (scene, tiles, HUD, init)
   .github/
     instructions/       Copilot instruction files
     skills/             Skill definitions (game-engine, quasi-coder)
@@ -46,72 +65,53 @@ map-3d-camera/
 
 ## Configuration
 
-Map configuration is defined in `js/app.js`:
+Rendering configuration is defined in `renderMap.json`:
 
-```javascript
-const mapConfig = {
-  view: 'satellite',   // Satellite imagery
-  labels: false,        // Minimal labels
-  '3d': true            // 3D tilt enabled (45 degree default)
-};
-```
-
-### Map URL Parameters
-
-The application builds Google Maps embed URLs using protocol buffer parameters:
-
-- **Distance** (`!1d`) -- controls zoom level (lower = more zoomed in, default: 3000)
-- **Heading** (`!1f`) -- camera heading in degrees (default: 0, north-up)
-- **Tilt** (`!2f`) -- 3D tilt angle (default: 45 degrees)
-- **Map type** (`!5e1`) -- satellite view
-
-### 3D Control Sensitivity
-
-Sensitivity values in `js/camera3d.js`:
-
-```javascript
-sensitivity: {
-  rotate: 0.03,    // degrees per pixel
-  pan: 0.15,       // pixels per pixel
-  zoom: 0.0002     // scale per wheel delta unit
+```json
+{
+    "map": {
+        "width": 1920,
+        "height": 1080,
+        "tileZoom": 15,
+        "tileSize": 100,
+        "loadRadius": 6,
+        "unloadRadius": 9,
+        "startAltitude": 200,
+        "fogDensity": 0.00018
+    },
+    "filler": {
+        "sampleInterval": 45,
+        "perimeter": { "patchCount": 10, "patchSize": 10 },
+        "center": { "patchCount": 5, "patchSize": 10 },
+        "padding": { "patchCount": 4, "patchSize": 5 }
+    },
+    "cloud": {
+        "enabled": true,
+        "opacity": 0.35,
+        "speed": 0.0004,
+        "coverage": 0.5,
+        "scale": 0.008
+    }
 }
 ```
 
-## How It Works
-
-### Map Loading
-
-1. User selects a capital from the dropdown
-2. The app builds two Google Maps embed URLs using the capital's coordinates:
-   - **Rendered map** -- visible iframe at the selected zoom level
-   - **Background map** -- hidden iframe at 10% more zoom-out (wider field of view)
-3. Both iframes load in the map container (80% of viewport width and height)
-
-### 3D Camera Controls
-
-The 3D effect is achieved through CSS 3D transforms applied to the map wrapper:
-
-1. The map container has `perspective: 2000px` creating a 3D rendering context
-2. The map wrapper has `transform-style: preserve-3d` for 3D transform support
-3. On mouse interaction, CSS transforms are applied:
-   - `rotateX()` -- tilts the view forward/backward
-   - `rotateY()` -- orbits the view left/right
-   - `translate()` -- pans the view
-   - `scale()` -- zooms in/out
-4. The background map (10% more zoomed out, 110% size) becomes visible behind the main map, providing visual context at the edges exposed by perspective distortion
-5. Mouse wheel zoom debounces a map URL update that reloads both iframes at the appropriate distance, maintaining the 10% zoom offset for the background map
-
-### Transform Limits
-
-To prevent extreme distortion, transforms are clamped:
-
-- Rotation: +/- 12 degrees vertical, +/- 15 degrees horizontal
-- Pan: +/- 60 pixels in each direction
-- Zoom: 0.85x to 1.3x scale
+| Section | Parameter | Description |
+|---------|-----------|-------------|
+| map | tileZoom | Satellite tile zoom level (10-19) |
+| map | loadRadius | Tiles to load around camera |
+| map | fogDensity | Exponential fog density |
+| filler | sampleInterval | Frames between fill texture updates |
+| filler | perimeter.patchCount | Sample patches per viewport border |
+| filler | center.patchCount | Sample patches from viewport center |
+| filler | padding.patchCount | Sample patches toward flight direction |
+| cloud | opacity | Cloud layer transparency (0-1) |
+| cloud | speed | Cloud drift speed |
+| cloud | coverage | Cloud coverage density (0.1-1) |
+| cloud | scale | Noise scale for cloud pattern |
 
 ## Browser Support
 
-Requires a modern browser with CSS 3D transform support (Chrome, Firefox, Edge, Safari).
+Requires a modern browser with WebGL and Pointer Lock API support (Chrome, Firefox, Edge, Safari).
 
 ## License
 
