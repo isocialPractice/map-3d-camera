@@ -2,14 +2,14 @@
 
 All notable changes to `map-3d-camera` are documented in this file.
 
-**Version syntax**: `unreleased-MM.DD.YYYY`
+**Version syntax**: `MM.DD.YYYY-unreleased`
 
-- `unreleased` -- constant prefix while the project has no tagged releases
 - `MM` -- two-digit month
 - `DD` -- two-digit day
 - `YYYY` -- four-digit year
+- `unreleased` -- constant prefix while the project has no tagged releases
 
-## unreleased-07.16.2026
+## 07.16.2026-unreleased
 
 ### State of the repo
 
