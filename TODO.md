@@ -1,6 +1,7 @@
 # TODO
 
-Planned and candidate work for `map-3d-camera`, grouped by release impact.
+Planned and candidate work for `map-3d-camera`, grouped by conventional release
+impact.
 
 - **Major** -- new capabilities or architectural changes
 - **Minor** -- feature additions and enhancements that fit the current design

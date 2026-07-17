@@ -124,7 +124,7 @@ Rendering configuration is defined in `renderMap.json`:
 
 ## Browser Support
 
-Requires a modern browser with WebGL and Pointer Lock API support (Chrome, Firefox, Edge, Safari).
+Requires a modern browser with WebGL and Pointer Lock API support (*Chrome*, *Firefox*, *Edge*, *Safari*).
 
 ## License
 

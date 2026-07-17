@@ -1,9 +1,9 @@
-/**
- * 3D Flight Simulator - Main Application
- *
- * Three.js scene with satellite imagery terrain tiles,
- * flight simulator controls, dynamic tile loading, and HUD.
- */
+/*****************************************************************
+ * 3D Flight Simulator - Main Application                        *
+ *                                                               *
+ * Three.js scene with satellite imagery terrain tiles,          *
+ * flight simulator controls, dynamic tile loading, and HUD.     *
+ ****************************************************************/
 
 /* ============================================================
    Configuration

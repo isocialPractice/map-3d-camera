@@ -1,19 +1,19 @@
-/**
- * FlightControls - Flight simulator camera controls for Three.js.
- *
- * Controls:
- *   Mouse (pointer lock): Pitch and Yaw
- *   W / Up Arrow:         Increase speed
- *   S / Down Arrow:       Decrease speed
- *   A / Left Arrow:       Roll left
- *   D / Right Arrow:      Roll right
- *   Q:                    Yaw left (rudder)
- *   E:                    Yaw right (rudder)
- *   R:                    Climb
- *   F:                    Descend
- *   Space:                Auto-level (stabilize)
- *   Shift:                Boost speed
- */
+/*******************************************************************
+ * FlightControls - Flight simulator camera controls for Three.js. *
+ *                                                                 *
+ * Controls:                                                       *
+ *   Mouse (pointer lock): Pitch and Yaw                           *
+ *   W / Up Arrow:         Increase speed                          *
+ *   S / Down Arrow:       Decrease speed                          *
+ *   A / Left Arrow:       Roll left                               *
+ *   D / Right Arrow:      Roll right                              *
+ *   Q:                    Yaw left (rudder)                       *
+ *   E:                    Yaw right (rudder)                      *
+ *   R:                    Climb                                   *
+ *   F:                    Descend                                 *
+ *   Space:                Auto-level (stabilize)                  *
+ *   Shift:                Boost speed                             *
+ ******************************************************************/
 function FlightControls(camera, domElement) {
     this.camera = camera;
     this.domElement = domElement;

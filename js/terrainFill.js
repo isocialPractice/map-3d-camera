@@ -1,16 +1,16 @@
-/**
- * TerrainFill - Fills unloaded terrain gaps using sampled colors
- * from the rendered viewport.
- *
- * Algorithm:
- *   1. Render scene (without fill) to a low-res offscreen target
- *   2. Sample 10x10px patches from each of the 4 viewport borders (40 samples)
- *   3. Sample 10x10px patches from the middle area (5 samples)
- *   4. Sample 5x5px patches from padding perimeter in flight direction (4 samples)
- *   5. Filter out placeholder/sky/water colors
- *   6. Generate a fill texture by blending sampled colors with value noise
- *   7. Apply the texture to a large fill plane between tiles and water
- */
+/************************************************************************************
+ * TerrainFill - Fills unloaded terrain gaps using sampled colors                   *
+ * from the rendered viewport.                                                      *
+ *                                                                                  *
+ * Algorithm:                                                                       *
+ *   1. Render scene (without fill) to a low-res offscreen target                   *
+ *   2. Sample 10x10px patches from each of the 4 viewport borders (40 samples)     *
+ *   3. Sample 10x10px patches from the middle area (5 samples)                     *
+ *   4. Sample 5x5px patches from padding perimeter in flight direction (4 samples) *
+ *   5. Filter out placeholder/sky/water colors                                     *
+ *   6. Generate a fill texture by blending sampled colors with value noise         *
+ *   7. Apply the texture to a large fill plane between tiles and water             *
+ ***********************************************************************************/
 function TerrainFill(renderer, scene, camera) {
     this.renderer = renderer;
     this.scene = scene;

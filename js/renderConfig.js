@@ -1,11 +1,11 @@
-/**
- * RenderConfig - Loads, applies, and exports map rendering configuration.
- *
- * On page load, fetches renderMap.json and applies its values to the
- * live simulation. Provides methods for the config panel sliders to
- * update values in real-time, and an export function that saves the
- * current configuration as a downloadable renderMap.json file.
- */
+/***************************************************************************
+ * RenderConfig - Loads, applies, and exports map rendering configuration. *
+ *                                                                         *
+ * On page load, fetches renderMap.json and applies its values to the      *
+ * live simulation. Provides methods for the config panel sliders to       *
+ * update values in real-time, and an export function that saves the       *
+ * current configuration as a downloadable renderMap.json file.            *
+ **************************************************************************/
 var RenderConfig = (function () {
 
     var defaults = {

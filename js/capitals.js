@@ -1,7 +1,7 @@
-/**
- * World Capitals organized by continent/region.
- * Each capital includes country, city name, and coordinates.
- */
+/**************************************************************
+ * World Capitals organized by continent/region.              *
+ * Each capital includes country, city name, and coordinates. *
+ *************************************************************/
 var CAPITALS_BY_REGION = [
     {
         region: "North America",

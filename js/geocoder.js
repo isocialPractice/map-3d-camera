@@ -1,13 +1,13 @@
-/**
- * Geocoder - Reverse geocodes the camera's latitude/longitude into a
- * human-readable location label ("City, State, Country") using the
- * OpenStreetMap Nominatim API.
- *
- * Falls back to "Rural <state>, <country>" when the position is not
- * within a city/town/village boundary. Requests are throttled by time
- * and by minimum movement to respect the Nominatim usage policy
- * (absolute maximum of 1 request per second).
- */
+/************************************************************************
+ * Geocoder - Reverse geocodes the camera's latitude/longitude into a   *
+ * human-readable location label ("City, State, Country") using the     *
+ * OpenStreetMap Nominatim API.                                         *
+ *                                                                      *
+ * Falls back to "Rural <state>, <country>" when the position is not    *
+ * within a city/town/village boundary. Requests are throttled by time  *
+ * and by minimum movement to respect the Nominatim usage policy        *
+ * (absolute maximum of 1 request per second).                          *
+ ***********************************************************************/
 var Geocoder = (function () {
 
     var MIN_INTERVAL_MS = 5000;  // Minimum time between lookups
