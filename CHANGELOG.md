@@ -9,7 +9,7 @@ All notable changes to `map-3d-camera` are documented in this file.
 - `YYYY` -- four-digit year
 - `unreleased` -- constant prefix while the project has no tagged releases
 
-## 07.16.2026-unreleased
+## [07.16.2026-unreleased]
 
 ### State of the repo
 
