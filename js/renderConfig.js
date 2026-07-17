@@ -135,6 +135,16 @@ var RenderConfig = (function () {
             scene.fog.density = config.map.fogDensity;
         }
 
+        // Apply render resolution: the canvas buffer renders at the
+        // configured width/height while CSS stretches it to the window
+        if (typeof renderer !== 'undefined' && renderer &&
+            typeof camera !== 'undefined' && camera &&
+            config.map.width > 0 && config.map.height > 0) {
+            renderer.setSize(config.map.width, config.map.height, false);
+            camera.aspect = config.map.width / config.map.height;
+            camera.updateProjectionMatrix();
+        }
+
         // Apply filler settings to TerrainFill instance
         if (typeof terrainFill !== 'undefined' && terrainFill) {
             terrainFill.sampleInterval = config.filler.sampleInterval;
@@ -204,7 +214,6 @@ var RenderConfig = (function () {
             cloudToggle.checked = config.cloud.enabled;
             cloudToggle.addEventListener('change', function () {
                 set('cloud.enabled', cloudToggle.checked);
-                apply();
             });
         }
     }

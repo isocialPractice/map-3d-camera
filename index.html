@@ -171,8 +171,26 @@
     <!-- Controls Help -->
     <div id="controls-help" class="hidden">
         <div>W/S: Speed &middot; Mouse: Look &middot; A/D: Roll</div>
-        <div>Q/E: Yaw &middot; R/F: Alt &middot; Space: Level &middot; Shift: Boost</div>
+        <div>Q/E: Yaw &middot; R/F: Alt &middot; Space: Level &middot; Shift: Boost &middot; P: Pause</div>
     </div>
+
+    <!-- Static Controls List -->
+    <div id="controls-list" class="hidden">
+        <div class="controls-title">Controls</div>
+        <ul>
+            <li><span>W / S</span>Throttle</li>
+            <li><span>Mouse</span>Look</li>
+            <li><span>A / D</span>Roll</li>
+            <li><span>Q / E</span>Yaw</li>
+            <li><span>R / F</span>Climb / Descend</li>
+            <li><span>Space</span>Auto-level</li>
+            <li><span>Shift</span>Boost</li>
+            <li><span>P</span>Pause</li>
+        </ul>
+    </div>
+
+    <!-- Pause Indicator -->
+    <div id="pause-indicator" class="hidden">Paused</div>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="hidden">
@@ -192,6 +210,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="js/capitals.js"></script>
+    <script src="js/geocoder.js"></script>
     <script src="js/flightControls.js"></script>
     <script src="js/terrainFill.js"></script>
     <script src="js/renderConfig.js"></script>

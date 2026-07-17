@@ -88,6 +88,14 @@ FlightControls.prototype._init = function () {
     document.addEventListener('pointerlockchange', function () {
         self.isPointerLocked = document.pointerLockElement === self.domElement;
         self.isEnabled = self.isPointerLocked;
+        if (!self.isPointerLocked) {
+            // Keyup events can be missed while unlocked; clear input
+            // state so no key reads as stuck on the next lock
+            self.keys = {};
+            self.autoLevel = false;
+            self.mouseMovementX = 0;
+            self.mouseMovementY = 0;
+        }
         document.dispatchEvent(new CustomEvent('flightcontrols', {
             detail: { locked: self.isPointerLocked }
         }));

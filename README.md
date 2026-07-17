@@ -14,6 +14,9 @@
 - **Render Configuration** -- adjustable sliders for map dimensions, tile settings, filler sampling, and cloud parameters
 - **Export JSON** -- export current rendering configuration as `renderMap.json` for reuse across sessions
 - **HUD Overlay** -- heading, speed, altitude, pitch, coordinates, and crosshair display
+- **Dynamic Location Label** -- HUD top text updates with the city, state, and country at the camera's position (OpenStreetMap Nominatim reverse geocoding); outside city boundaries it shows "Rural &lt;state&gt;"
+- **Static Controls List** -- always-visible key reference fixed to the lower left
+- **Pause** -- press `P` to freeze flight, tile loading, HUD, and cloud animation
 
 ## Getting Started
 
@@ -33,34 +36,37 @@
 | R / F                  | Climb / Descend   |
 | Space                  | Auto-level        |
 | Shift                  | Boost             |
+| P                      | Pause / Resume    |
 
 ### Render Configuration
 
 Click the **Config** button in the top-left to open the configuration panel. Adjust sliders in real-time to tune:
 
-- **Map**: width, height, tile zoom, load radius, start altitude, fog density
-- **Filler**: sample interval, patch count/size at perimeter, center, and padding zones
+- **Map**: width, height, tile zoom, load radius, radius feather, start altitude, fog density
+- **Filler**: sample interval, update time, patch count/size at perimeter, center, and padding zones
 - **Cloud Effect**: enabled toggle, opacity, drift speed, coverage, noise scale
 
 Click **Export JSON** to download the current configuration as `renderMap.json`. Place this file alongside `index.html` to load it automatically on next visit.
 
 ## Project Structure
 
-```
+```text
 map-3d-camera/
   index.html            Main HTML page
-  renderMap.json        Render configuration (loaded on startup)
+  renderMap.json        Render configuration (optional; loaded on startup)
+  changelog.md          Version history (unreleased-MM-DD-YYYY syntax)
+  TODO.md               Idea backlog grouped by major/minor/patch impact
   css/
     styles.css          Application styles
   js/
     capitals.js         World capitals data (grouped by continent)
+    geocoder.js         Reverse geocoding for the dynamic location label
     flightControls.js   Flight simulator camera controls
     terrainFill.js      Terrain fill + cloud effect system
     renderConfig.js     Configuration loader, applier, and exporter
     app.js              Application logic (scene, tiles, HUD, init)
   .github/
-    instructions/       Copilot instruction files
-    skills/             Skill definitions (game-engine, quasi-coder)
+    skills/             Skill definitions (game-engine)
 ```
 
 ## Configuration
@@ -77,10 +83,13 @@ Rendering configuration is defined in `renderMap.json`:
         "loadRadius": 6,
         "unloadRadius": 9,
         "startAltitude": 200,
-        "fogDensity": 0.00018
+        "fogDensity": 0.00018,
+        "radiusFeather": 3,
+        "maxTiles": 600
     },
     "filler": {
         "sampleInterval": 45,
+        "updateIntervalSec": 10,
         "perimeter": { "patchCount": 10, "patchSize": 10 },
         "center": { "patchCount": 5, "patchSize": 10 },
         "padding": { "patchCount": 4, "patchSize": 5 }
@@ -96,11 +105,15 @@ Rendering configuration is defined in `renderMap.json`:
 ```
 
 | Section | Parameter | Description |
-|---------|-----------|-------------|
+| ------- | --------- | ----------- |
+| map | width / height | Render resolution of the canvas buffer |
 | map | tileZoom | Satellite tile zoom level (10-19) |
 | map | loadRadius | Tiles to load around camera |
+| map | radiusFeather | Tiles of opacity falloff at the load radius edge |
+| map | maxTiles | Maximum loaded tiles (memory cap) |
 | map | fogDensity | Exponential fog density |
-| filler | sampleInterval | Frames between fill texture updates |
+| filler | sampleInterval | Frames between viewport color samples |
+| filler | updateIntervalSec | Seconds between fill texture regenerations |
 | filler | perimeter.patchCount | Sample patches per viewport border |
 | filler | center.patchCount | Sample patches from viewport center |
 | filler | padding.patchCount | Sample patches toward flight direction |

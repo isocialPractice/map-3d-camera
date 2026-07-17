@@ -39,6 +39,7 @@ var tilesLoaded = 0;
 var tilesRequested = 0;
 var initialLoadDone = false;
 var tileUpdateCounter = 0;
+var isPaused = false;
 
 /* ============================================================
    Tile Math Utilities
@@ -195,11 +196,10 @@ function initScene() {
     // Terrain fill (samples viewport colors to fill unloaded tile gaps)
     terrainFill = new TerrainFill(renderer, scene, camera);
 
-    // Window resize
+    // Window resize: render resolution comes from config (canvas CSS
+    // stretches to fill the window), so just reapply the config values
     window.addEventListener('resize', function () {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        RenderConfig.apply();
     });
 }
 
@@ -221,7 +221,7 @@ function loadTile(tileX, tileY) {
     mesh.position.set(worldX, 0, worldZ);
     scene.add(mesh);
 
-    loadedTiles[key] = { mesh: mesh, tileX: tileX, tileY: tileY };
+    loadedTiles[key] = { mesh: mesh, tileX: tileX, tileY: tileY, loaded: false };
     tilesRequested++;
 
     var url = getTileUrl(tileX, tileY, TILE_ZOOM);
@@ -233,6 +233,7 @@ function loadTile(tileX, tileY) {
         mesh.material.map = texture;
         mesh.material.color.set(0xffffff);
         mesh.material.needsUpdate = true;
+        loadedTiles[key].loaded = true;
         tilesLoaded++;
         updateLoadingProgress();
     }, undefined, function () {
@@ -248,9 +249,12 @@ function loadTile(tileX, tileY) {
             mesh.material.map = texture;
             mesh.material.color.set(0xffffff);
             mesh.material.needsUpdate = true;
+            loadedTiles[key].loaded = true;
             tilesLoaded++;
             updateLoadingProgress();
         }, undefined, function () {
+            if (!loadedTiles[key]) return;
+            loadedTiles[key].loaded = true;
             tilesLoaded++;
             updateLoadingProgress();
         });
@@ -267,6 +271,13 @@ function unloadTile(key) {
     tile.mesh.material.dispose();
 
     delete loadedTiles[key];
+
+    // A tile evicted before its texture arrived still counts as resolved,
+    // otherwise the loading progress can stall below its completion threshold
+    if (!tile.loaded) {
+        tilesLoaded++;
+        updateLoadingProgress();
+    }
 }
 
 function clearAllTiles() {
@@ -352,7 +363,9 @@ function updateTileFeather(camTileX, camTileY) {
         return;
     }
 
-    var featherStart = LOAD_RADIUS - RADIUS_FEATHER;
+    // Clamp so a feather wider than the load radius still yields a valid zone
+    var featherStart = Math.max(0, LOAD_RADIUS - RADIUS_FEATHER);
+    var featherWidth = LOAD_RADIUS - featherStart;
     var keys = Object.keys(loadedTiles);
     for (var i = 0; i < keys.length; i++) {
         var tile = loadedTiles[keys[i]];
@@ -367,7 +380,7 @@ function updateTileFeather(camTileX, camTileY) {
             opacity = 0;
         } else {
             // Smoothstep falloff from 1 to 0 across the feather zone
-            var t = (dist - featherStart) / RADIUS_FEATHER;
+            var t = (dist - featherStart) / featherWidth;
             opacity = 1 - t * t * (3 - 2 * t);
         }
 
@@ -397,9 +410,13 @@ function loadCapital(capitalData) {
     // Show loading
     document.getElementById('loading-overlay').classList.remove('hidden');
     document.getElementById('welcome').classList.add('hidden');
+    document.getElementById('fly-prompt').classList.add('hidden');
 
     // Reset terrain fill for new location
     if (terrainFill) terrainFill.reset();
+
+    // Reset geocoder so the location label refreshes for the new area
+    Geocoder.reset();
 
     // Load initial tiles
     updateTiles();
@@ -419,8 +436,7 @@ function loadCapital(capitalData) {
    ============================================================ */
 
 function updateLoadingProgress() {
-    var initialCount = Math.floor(Math.PI * LOAD_RADIUS * LOAD_RADIUS);
-    var pct = Math.min(100, Math.round((tilesLoaded / initialCount) * 100));
+    var pct = Math.min(100, Math.round((tilesLoaded / Math.max(1, tilesRequested)) * 100));
 
     document.getElementById('loading-bar').style.width = pct + '%';
     document.getElementById('loading-progress').textContent = pct + '%';
@@ -430,6 +446,7 @@ function updateLoadingProgress() {
         document.getElementById('loading-overlay').classList.add('hidden');
         document.getElementById('fly-prompt').classList.remove('hidden');
         document.getElementById('hud').classList.remove('hidden');
+        document.getElementById('controls-list').classList.remove('hidden');
     }
 }
 
@@ -470,6 +487,11 @@ function updateHUD() {
     document.getElementById('hud-coords').textContent =
         Math.abs(coords.lat).toFixed(4) + '\u00B0' + latDir + '  ' +
         Math.abs(coords.lng).toFixed(4) + '\u00B0' + lngDir;
+
+    // Update the location label as the camera moves (throttled internally)
+    Geocoder.update(coords.lat, coords.lng, function (label) {
+        document.getElementById('hud-capital').textContent = label;
+    });
 }
 
 /* ============================================================
@@ -503,6 +525,11 @@ function setupUI() {
         loadCapital(data);
     });
 
+    // Pause toggle (P key): freezes flight, tile updates, HUD, and clouds
+    document.addEventListener('keydown', function (e) {
+        if (e.code === 'KeyP') togglePause();
+    });
+
     // Flight controls lock/unlock
     document.addEventListener('flightcontrols', function (e) {
         if (e.detail.locked) {
@@ -527,8 +554,31 @@ function setupUI() {
    Animation Loop
    ============================================================ */
 
+function togglePause() {
+    isPaused = !isPaused;
+    var indicator = document.getElementById('pause-indicator');
+    if (isPaused) {
+        indicator.classList.remove('hidden');
+    } else {
+        indicator.classList.add('hidden');
+        // Discard input and time accumulated while paused so the
+        // camera does not jump on resume
+        if (controls) {
+            controls.mouseMovementX = 0;
+            controls.mouseMovementY = 0;
+        }
+        if (clock) clock.getDelta();
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
+
+    // Common pause state: keep rendering the frozen scene only
+    if (isPaused) {
+        renderer.render(scene, camera);
+        return;
+    }
 
     var delta = clock.getDelta();
 
@@ -607,10 +657,14 @@ function init() {
             setupUI();
             RenderConfig.bindSliders();
 
-            // React to config changes that require special handling
+            // React to config changes that require special handling.
+            // Debounce the zoom reload so dragging the slider does not
+            // trigger a full tile clear + refetch on every input tick.
+            var zoomReloadTimer = null;
             RenderConfig.onChange(function (path) {
                 if (path === 'map.tileZoom') {
-                    reloadTilesAtCurrentZoom();
+                    clearTimeout(zoomReloadTimer);
+                    zoomReloadTimer = setTimeout(reloadTilesAtCurrentZoom, 400);
                 }
             });
 
