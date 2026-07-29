@@ -1,6 +1,7 @@
 # Map 3D Camera
 
-> [!WARNING] This repository is **archived** and is no longer actively maintained. 
+> [!WARNING]
+> This repository is **archived** and is no longer actively maintained.
 > All issues, pull requests, and code changes are disabled.
 
 ## Status Details
