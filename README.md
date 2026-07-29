@@ -1,5 +1,13 @@
 # Map 3D Camera
 
+> [!WARNING] This repository is **archived** and is no longer actively maintained. 
+> All issues, pull requests, and code changes are disabled.
+
+## Status Details
+
+- **Reason:** Current status of the repo is good enough to make an alpha VS Code extension
+- **Active Successor:** [vscode-flight-map](https://github.com/isocialPractice/vscode-flight-map)
+
 `ctrl + click` to run [demo](https://isocialpractice.github.io/map-3d-camera/index.html).
 
 3D satellite camera viewer for world capitals using Three.js flight simulator controls.

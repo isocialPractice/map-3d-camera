@@ -9,6 +9,12 @@ All notable changes to `map-3d-camera` are documented in this file.
 - `YYYY` -- four-digit year
 - `unreleased` -- constant prefix while the project has no tagged releases
 
+## [07.29.2026-deprecated]
+
+Working status of repository is good enough for an alpha VS Code extension.
+This repo has been moved to
+[vscode-flight-map](https://github.com/isocialPractice/vscode-flight-map).
+
 ## [07.16.2026-unreleased]
 
 ### State of the repo
